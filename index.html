@@ -36,7 +36,12 @@
          padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
          min-height: 100%; user-select: none; }
   .wrap { max-width: 980px; margin: 0 auto; padding: 16px 16px 90px; display: flex; flex-direction: column; gap: 16px; }
-  h1 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 4px; }
+  
+  /* Header layout with inline custom crest logo */
+  .app-header { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .app-header svg { width: 40px; height: 40px; flex-shrink: 0; }
+  h1 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  
   .lede { margin: 0; color: var(--muted); font-size: 1.02rem; max-width: 62ch; }
   .lede b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .lede b.up, .stat .v.up { color: var(--up); }
@@ -50,7 +55,7 @@
   .entry-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
            border-radius: 8px; padding: 12px; flex: 1 1 15rem; min-width: 0; max-width: 100%; min-height: 44px; }
-  .btns { display: flex; gap: 6px; width: 100%; sm-width: auto; }
+  .btns { display: flex; gap: 6px; width: 100%; }
   button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; }
   .res { flex: 1; min-width: 3.5rem; padding: 10px 0; font-weight: 800; color: #fff; border: 0; font-size: 1rem; }
   .res.W { background: var(--w); } .res.D { background: var(--d); } .res.L { background: var(--l); }
@@ -126,8 +131,20 @@
   </div>
 
   <header>
-    <h1>Arsenal points race</h1>
-    <p class="lede" id="lede">Loading…</p>
+    <div class="app-header">
+      <!-- Your custom crest icon rendered right in the webpage header -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <path fill="#F5A623" d="M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z"/>
+        <path fill="#D0021B" d="M256 32c-80 0-136 84-136 208 0 128 136 224 136 224s136-96 136-224C392 116 336 32 256 32z"/>
+        <path fill="#005A9C" d="M156 80c-20 30-36 80-36 144 0 100 90 190 136 224V80H156z"/>
+        <path fill="#4A90E2" d="M168 90c-15 25-28 65-28 120 0 85 75 160 116 195V90H168z"/>
+        <path fill="#F5A623" d="M136 180h240v40H136z"/>
+        <circle cx="256" cy="280" r="50" fill="#F5A623"/>
+        <circle cx="256" cy="280" r="20" fill="#D0021B"/>
+      </svg>
+      <h1>Arsenal points race</h1>
+    </div>
+    <p class="lede" id="lede" style="margin-top: 6px;">Loading…</p>
   </header>
 
   <section class="panel entry" aria-labelledby="entry-h">
@@ -201,7 +218,6 @@
   };
   var cssVar = function (n) { return getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim(); };
 
-  // ---------- PWA & Embedded Manifest Setup ----------
   if ('serviceWorker' in navigator) {
     try {
       var swCode = "self.addEventListener('fetch', function(e) { e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); })); });";
@@ -248,12 +264,11 @@
           if (banner) banner.style.display = 'none';
         });
       } else {
-        alert('To install, tap the Share button in Safari and select "Add to Home Screen", or tap the browser menu in Chrome and select "Install app".');
+        alert('To install, tap the Share button in Safari and select "Add to Home Screen".');
       }
     });
   }
 
-  // ---------- storage ----------
   var memory = null, storageOk = true;
   function loadEntries() {
     try { var t = window.localStorage.getItem(KEY); return t ? JSON.parse(t) : {}; }
@@ -296,7 +311,6 @@
     return n;
   }
 
-  // ---------- render ----------
   var picked = null, S = [];
   function render() {
     S = seasonsNow();
@@ -506,7 +520,6 @@
     strip.appendChild(tip);
   }
 
-  // ---------- actions ----------
   var msgTimer = null;
   function say(text, cls) {
     var m = el('msg'); m.textContent = text; m.className = 'msg' + (cls ? ' ' + cls : '');
