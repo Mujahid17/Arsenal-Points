@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arsenal Points">
+<meta name="theme-color" content="#DB0007">
+<!-- High-res Arsenal Crest Icon for iOS Home Screen -->
+<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg">
+<link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg">
+<title>Arsenal points race: 2026/27 vs the last two seasons</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #F3F4F6; --panel: #FFFFFF; --ink: #121826; --muted: #5B6474; --line: #E2E5EA; --grid: #ECEEF2;
+    --now: #10B981; --title: #EF4444; --old: #3B82F6;
+    --w: #1E9E4A; --d: #8C8C8C; --l: #D92D20; --up: #13803C; --down: #C2261B;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #0D121C; --panel: #151C29; --ink: #EEF1F6; --muted: #9AA4B5; --line: #263042; --grid: #1E2737;
+      --now: #34D399; --title: #F87171; --old: #60A5FA;
+      --up: #4CC27A; --down: #FF6B5E;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+         padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+         min-height: 100%; user-select: none; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px 16px 90px; display: flex; flex-direction: column; gap: 16px; }
+  
+  .header-brand { display: flex; align-items: center; gap: 12px; margin: 8px 0 4px; }
+  .header-brand img { width: 38px; height: 44px; object-fit: contain; }
+  h1 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  
+  .lede { margin: 0; color: var(--muted); font-size: 1.02rem; max-width: 62ch; }
+  .lede b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .lede b.up, .stat .v.up { color: var(--up); }
+  .lede b.down, .stat .v.down { color: var(--down); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+  h2 { font-size: 1.05rem; font-weight: 700; margin: 0 0 2px; }
+  .note { margin: 0 0 12px; color: var(--muted); font-size: 0.85rem; }
+
+  /* result entry */
+  .entry { border-left: 4px solid var(--now); }
+  .entry-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+           border-radius: 8px; padding: 12px; flex: 1 1 15rem; min-width: 0; max-width: 100%; min-height: 44px; }
+  .btns { display: flex; gap: 6px; width: 100%; sm-width: auto; }
+  button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; }
+  .res { flex: 1; min-width: 3.5rem; padding: 10px 0; font-weight: 800; color: #fff; border: 0; font-size: 1rem; }
+  .res.W { background: var(--w); } .res.D { background: var(--d); } .res.L { background: var(--l); }
+  .ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 10px 14px; font-weight: 600; font-size: 0.9rem; }
+  button:focus-visible, select:focus-visible { outline: 3px solid var(--title); outline-offset: 2px; }
+  .msg { margin: 10px 0 0; font-size: 0.85rem; min-height: 1.3em; color: var(--muted); }
+  .msg.ok { color: var(--up); } .msg.bad { color: var(--down); }
+
+  /* chart */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 20px; border-top: 3px solid; display: inline-block; }
+  .legend .k-now { border-color: var(--now); } 
+  .legend .k-title { border-color: var(--title); border-top-width: 2px; }
+  .legend .k-old { border-color: var(--old); border-top-width: 2px; }
+  .chart { position: relative; touch-action: pan-y; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  
+  .tip { position: absolute; top: 6px; pointer-events: none; background: var(--panel); border: 1px solid var(--line);
+         border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); padding: 10px 12px; font-size: 0.8rem;
+         width: 230px; display: none; z-index: 10; }
+  .tip .head { font-weight: 700; color: var(--muted); margin-bottom: 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .tip-row { display: flex; flex-direction: column; margin-bottom: 6px; }
+  .tip-row:last-child { margin-bottom: 0; }
+  .tip-top { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+  .tip-left { display: inline-flex; align-items: center; gap: 6px; }
+  .tip .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .tip-sub { font-size: 0.75rem; color: var(--muted); margin-top: 1px; margin-left: 16px; }
+
+  /* stats */
+  .stats { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); }
+  .stat .k { font-size: 0.8rem; color: var(--muted); }
+  .stat .v { font-size: 1.9rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .stat .s { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* strip */
+  .strip { display: grid; grid-template-columns: auto repeat(38, minmax(0, 1fr)); gap: 3px; row-gap: 4px; align-items: center; position: relative; overflow-x: auto; padding-bottom: 4px; }
+  .strip .lab { font-size: 0.78rem; color: var(--muted); padding-right: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .box { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+         color: #fff; font-size: 10px; font-weight: 800; min-width: 0; }
+  .box.W { background: var(--w); } .box.D { background: var(--d); } .box.L { background: var(--l); }
+  .box.none { border: 1px solid var(--line); }
+  .box.hot { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding-bottom: 20px; }
+  footer p { margin: 0; font-size: 0.8rem; color: var(--muted); max-width: 60ch; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+  .tools button { flex: 1; }
+
+  /* mobile sticky action bar */
+  .mobile-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--line); padding: 10px 16px env(safe-area-inset-bottom, 10px); z-index: 100; box-shadow: 0 -4px 16px rgba(0,0,0,.08); gap: 8px; align-items: center; }
+  @media (max-width: 768px) {
+    .mobile-bar { display: flex; }
+    .wrap { padding-bottom: 110px; }
+  }
+
+  /* PWA install banner */
+  #pwa-banner { display: none; background: linear-gradient(135deg, var(--title), var(--now)); color: #fff; padding: 12px 16px; border-radius: var(--radius); align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  #pwa-banner button { background: #fff; color: var(--ink); border: none; padding: 6px 12px; font-weight: 700; border-radius: 6px; min-height: auto; cursor: pointer; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .res { transition: transform .08s ease-out; } .res:active { transform: scale(.95); }
+  }
+</style>
+</head>
+<body id="artifacts-component-root-html">
+<div class="wrap">
+  <div id="pwa-banner">
+    <div>
+      <strong>Install Arsenal Points Race</strong>
+      <div style="font-size: 0.8rem; opacity: 0.9;">Add to home screen for app-like full screen experience!</div>
+    </div>
+    <button id="pwa-install-btn">Install</button>
+  </div>
+
+  <header>
+    <div class="header-brand">
+      <img src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" alt="Arsenal Crest" />
+      <h1>Arsenal points race</h1>
+    </div>
+    <p class="lede" id="lede">Loading…</p>
+  </header>
+
+  <section class="panel entry" aria-labelledby="entry-h">
+    <h2 id="entry-h">Enter a result</h2>
+    <p class="note">Pick the game (H = home, A = away), then tap W, D or L. Everything updates instantly.</p>
+    <div class="entry-row">
+      <select id="game" aria-label="Game"></select>
+      <div class="btns" style="display:flex; gap:6px;">
+        <button type="button" class="res W" data-res="W" aria-label="Win">W</button>
+        <button type="button" class="res D" data-res="D" aria-label="Draw">D</button>
+        <button type="button" class="res L" data-res="L" aria-label="Loss">L</button>
+        <button type="button" class="ghost" data-res="" aria-label="Clear result">Clear</button>
+      </div>
+    </div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="chart-h">
+    <h2 id="chart-h">Cumulative points by game</h2>
+    <p class="note">Running total after each Premier League game. Tap or hover the chart for match details.</p>
+    <div class="legend">
+      <span><i class="k-now"></i>2026/27 (This Season)</span>
+      <span><i class="k-title"></i>2025/26 (Champions)</span>
+      <span><i class="k-old"></i>2024/25</span>
+    </div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="stats" aria-label="Same-stage comparison">
+    <div class="panel stat"><div class="k">2026/27 points</div><div class="v" id="s-pts">–</div><div class="s" id="s-pts-s"></div></div>
+    <div class="panel stat"><div class="k">vs 2025/26 at same stage</div><div class="v" id="s-d26">–</div><div class="s" id="s-d26-s"></div></div>
+    <div class="panel stat"><div class="k">vs 2024/25 at same stage</div><div class="v" id="s-d25">–</div><div class="s" id="s-d25-s"></div></div>
+    <div class="panel stat"><div class="k">2026/27 record</div><div class="v" id="s-rec">–</div><div class="s">won, drawn, lost</div></div>
+  </section>
+
+  <section class="panel" aria-labelledby="strip-h">
+    <h2 id="strip-h">Results by game</h2>
+    <p class="note">One box per league game, in order. W green, D grey, L red. Empty boxes are upcoming games.</p>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <footer>
+    <p id="foot">Premier League games only. Fixtures from premierleague.com; results from ESPN and club season records. Stored locally on your device.</p>
+    <div class="tools">
+      <button type="button" class="ghost" id="dl">Download updated copy</button>
+      <button type="button" class="ghost" id="reset">Undo all entries</button>
+    </div>
+  </footer>
+</div>
+
+<!-- Mobile Sticky Action Bar -->
+<div class="mobile-bar">
+  <select id="mobile-game" aria-label="Game Select" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit; min-height:44px;"></select>
+  <button type="button" class="res W" data-mres="W" style="min-width:44px;">W</button>
+  <button type="button" class="res D" data-mres="D" style="min-width:44px;">D</button>
+  <button type="button" class="res L" data-mres="L" style="min-width:44px;">L</button>
+</div>
+
+<script type="application/json" id="ars-data">{"stamp":"2026-11-02T18:11:06","current":"2026/27","seasons":[{"season":"2024/25","games":[{"g":1,"date":"2024-08-17","opp":"Wolverhampton Wanderers","v":"H","r":"W"},{"g":2,"date":"2024-08-24","opp":"Aston Villa","v":"A","r":"W"},{"g":3,"date":"2024-08-31","opp":"Brighton & Hove Albion","v":"H","r":"D"},{"g":4,"date":"2024-09-15","opp":"Tottenham Hotspur","v":"A","r":"W"},{"g":5,"date":"2024-09-22","opp":"Manchester City","v":"A","r":"D"},{"g":6,"date":"2024-09-28","opp":"Leicester City","v":"H","r":"W"},{"g":7,"date":"2024-10-05","opp":"Southampton","v":"H","r":"W"},{"g":8,"date":"2024-10-19","opp":"Bournemouth","v":"A","r":"L"},{"g":9,"date":"2024-10-27","opp":"Liverpool","v":"H","r":"D"},{"g":10,"date":"2024-11-02","opp":"Newcastle United","v":"A","r":"L"},{"g":11,"date":"2024-11-10","opp":"Chelsea","v":"A","r":"D"},{"g":12,"date":"2024-11-23","opp":"Nottingham Forest","v":"H","r":"W"},{"g":13,"date":"2024-11-30","opp":"West Ham United","v":"A","r":"W"},{"g":14,"date":"2024-12-04","opp":"Manchester United","v":"H","r":"W"},{"g":15,"date":"2024-12-08","opp":"Fulham","v":"A","r":"D"},{"g":16,"date":"2024-12-14","opp":"Everton","v":"H","r":"D"},{"g":17,"date":"2024-12-21","opp":"Crystal Palace","v":"A","r":"W"},{"g":18,"date":"2024-12-27","opp":"Ipswich Town","v":"H","r":"W"},{"g":19,"date":"2025-01-01","opp":"Brentford","v":"A","r":"W"},{"g":20,"date":"2025-01-04","opp":"Brighton & Hove Albion","v":"A","r":"D"},{"g":21,"date":"2025-01-15","opp":"Tottenham Hotspur","v":"H","r":"W"},{"g":22,"date":"2025-01-18","opp":"Aston Villa","v":"H","r":"D"},{"g":23,"date":"2025-01-25","opp":"Wolverhampton Wanderers","v":"A","r":"W"},{"g":24,"date":"2025-02-02","opp":"Manchester City","v":"H","r":"W"},{"g":25,"date":"2025-02-15","opp":"Leicester City","v":"A","r":"W"},{"g":26,"date":"2025-02-22","opp":"West Ham United","v":"H","r":"L"},{"g":27,"date":"2025-02-26","opp":"Nottingham Forest","v":"A","r":"D"},{"g":28,"date":"2025-03-09","opp":"Manchester United","v":"A","r":"D"},{"g":29,"date":"2025-03-16","opp":"Chelsea","v":"H","r":"W"},{"g":30,"date":"2025-04-01","opp":"Fulham","v":"H","r":"W"},{"g":31,"date":"2025-04-05","opp":"Everton","v":"A","r":"D"},{"g":32,"date":"2025-04-12","opp":"Brentford","v":"H","r":"D"},{"g":33,"date":"2025-04-20","opp":"Ipswich Town","v":"A","r":"W"},{"g":34,"date":"2025-04-23","opp":"Crystal Palace","v":"H","r":"D"},{"g":35,"date":"2025-05-03","opp":"Bournemouth","v":"H","r":"L"},{"g":36,"date":"2025-05-11","opp":"Liverpool","v":"A","r":"D"},{"g":37,"date":"2025-05-18","opp":"Newcastle United","v":"H","r":"W"},{"g":38,"date":"2025-05-25","opp":"Southampton","v":"A","r":"W"}]},{"season":"2025/26","games":[{"g":1,"date":"2025-08-17","opp":"Manchester United","v":"A","r":"W"},{"g":2,"date":"2025-08-23","opp":"Leeds United","v":"H","r":"W"},{"g":3,"date":"2025-08-31","opp":"Liverpool","v":"A","r":"L"},{"g":4,"date":"2025-09-13","opp":"Nottingham Forest","v":"H","r":"W"},{"g":5,"date":"2025-09-21","opp":"Manchester City","v":"H","r":"D"},{"g":6,"date":"2025-09-28","opp":"Newcastle United","v":"A","r":"W"},{"g":7,"date":"2025-10-04","opp":"West Ham United","v":"H","r":"W"},{"g":8,"date":"2025-10-18","opp":"Fulham","v":"A","r":"W"},{"g":9,"date":"2025-10-26","opp":"Crystal Palace","v":"H","r":"W"},{"g":10,"date":"2025-11-01","opp":"Burnley","v":"A","r":"W"},{"g":11,"date":"2025-11-08","opp":"Sunderland","v":"A","r":"D"},{"g":12,"date":"2025-11-23","opp":"Tottenham Hotspur","v":"H","r":"W"},{"g":13,"date":"2025-11-30","opp":"Chelsea","v":"A","r":"D"},{"g":14,"date":"2025-12-03","opp":"Brentford","v":"H","r":"W"},{"g":15,"date":"2025-12-06","opp":"Aston Villa","v":"A","r":"L"},{"g":16,"date":"2025-12-13","opp":"Wolverhampton Wanderers","v":"H","r":"W"},{"g":17,"date":"2025-12-20","opp":"Everton","v":"A","r":"W"},{"g":18,"date":"2025-12-27","opp":"Brighton & Hove Albion","v":"H","r":"W"},{"g":19,"date":"2025-12-30","opp":"Aston Villa","v":"H","r":"W"},{"g":20,"date":"2026-01-03","opp":"Bournemouth","v":"A","r":"W"},{"g":21,"date":"2026-01-08","opp":"Liverpool","v":"H","r":"D"},{"g":22,"date":"2026-01-17","opp":"Nottingham Forest","v":"A","r":"D"},{"g":23,"date":"2026-01-25","opp":"Manchester United","v":"H","r":"L"},{"g":24,"date":"2026-01-31","opp":"Leeds United","v":"A","r":"W"},{"g":25,"date":"2026-02-07","opp":"Sunderland","v":"H","r":"W"},{"g":26,"date":"2026-02-12","opp":"Brentford","v":"A","r":"D"},{"g":27,"date":"2026-02-18","opp":"Wolverhampton Wanderers","v":"A","r":"D"},{"g":28,"date":"2026-02-22","opp":"Tottenham Hotspur","v":"A","r":"W"},{"g":29,"date":"2026-03-01","opp":"Chelsea","v":"H","r":"W"},{"g":30,"date":"2026-03-04","opp":"Brighton & Hove Albion","v":"A","r":"W"},{"g":31,"date":"2026-03-14","opp":"Everton","v":"H","r":"W"},{"g":32,"date":"2026-04-11","opp":"Bournemouth","v":"H","r":"L"},{"g":33,"date":"2026-04-19","opp":"Manchester City","v":"A","r":"L"},{"g":34,"date":"2026-04-25","opp":"Newcastle United","v":"H","r":"W"},{"g":35,"date":"2026-05-02","opp":"Fulham","v":"H","r":"W"},{"g":36,"date":"2026-05-10","opp":"West Ham United","v":"A","r":"W"},{"g":37,"date":"2026-05-18","opp":"Burnley","v":"H","r":"W"},{"g":38,"date":"2026-05-24","opp":"Crystal Palace","v":"A","r":"W"}]},{"season":"2026/27","games":[{"g":1,"date":"2026-08-21","opp":"Coventry City","v":"H","r":"W"},{"g":2,"date":"2026-08-31","opp":"Aston Villa","v":"A","r":"W"},{"g":3,"date":"2026-09-06","opp":"Chelsea","v":"H","r":"W"},{"g":4,"date":"2026-09-12","opp":"Sunderland","v":"A","r":"W"},{"g":5,"date":"2026-09-19","opp":"Brighton & Hove Albion","v":"A","r":"L"},{"g":6,"date":"2026-10-10","opp":"Leeds United","v":"H","r":"W"},{"g":7,"date":"2026-10-18","opp":"Nottingham Forest","v":"A","r":"W"},{"g":8,"date":"2026-10-24","opp":"Everton","v":"H","r":"W"},{"g":9,"date":"2026-11-01","opp":"Liverpool","v":"A","r":"W"},{"g":10,"date":"2026-11-07","opp":"Hull City","v":"H","r":"W"},{"g":11,"date":"2026-11-21","opp":"Newcastle United","v":"A","r":""},{"g":12,"date":"2026-11-29","opp":"Manchester City","v":"H","r":""},{"g":13,"date":"2026-12-02","opp":"Brentford","v":"A","r":""},{"g":14,"date":"2026-12-06","opp":"Tottenham Hotspur","v":"A","r":""},{"g":15,"date":"2026-12-13","opp":"Bournemouth","v":"H","r":""},{"g":16,"date":"2026-12-20","opp":"Manchester United","v":"H","r":""},{"g":17,"date":"2026-12-27","opp":"Crystal Palace","v":"A","r":""},{"g":18,"date":"2026-12-30","opp":"Fulham","v":"A","r":""},{"g":19,"date":"2027-01-02","opp":"Ipswich Town","v":"H","r":""},{"g":20,"date":"2027-01-05","opp":"Brentford","v":"H","r":""},{"g":21,"date":"2027-01-16","opp":"Hull City","v":"A","r":""},{"g":22,"date":"2027-01-23","opp":"Newcastle United","v":"H","r":""},{"g":23,"date":"2027-01-30","opp":"Manchester City","v":"A","r":""},{"g":24,"date":"2027-02-06","opp":"Liverpool","v":"H","r":""},{"g":25,"date":"2027-02-10","opp":"Ipswich Town","v":"A","r":""},{"g":26,"date":"2027-02-20","opp":"Fulham","v":"H","r":""},{"g":27,"date":"2027-02-27","opp":"Manchester United","v":"A","r":""},{"g":28,"date":"2027-03-03","opp":"Crystal Palace","v":"H","r":""},{"g":29,"date":"2027-03-13","opp":"Chelsea","v":"A","r":""},{"g":30,"date":"2027-03-20","opp":"Sunderland","v":"H","r":""},{"g":31,"date":"2027-04-10","opp":"Coventry City","v":"A","r":""},{"g":32,"date":"2027-04-17","opp":"Aston Villa","v":"H","r":""},{"g":33,"date":"2027-04-24","opp":"Bournemouth","v":"A","r":""},{"g":34,"date":"2027-05-01","opp":"Tottenham Hotspur","v":"H","r":""},{"g":35,"date":"2027-05-08","opp":"Leeds United","v":"A","r":""},{"g":36,"date":"2027-05-15","opp":"Nottingham Forest","v":"H","r":""},{"g":37,"date":"2027-05-23","opp":"Everton","v":"A","r":""},{"g":38,"date":"2027-05-30","opp":"Brighton & Hove Albion","v":"H","r":""}]}]}</script>
+<script>
+(function () {
+  'use strict';
+  var PRISTINE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  var DATA = JSON.parse(document.getElementById('ars-data').textContent);
+  var CUR = DATA.current;
+  var PTS = { W: 3, D: 1, L: 0 };
+  var KEY = 'arsenal-points-race:' + DATA.stamp;
+  var STYLE = {
+    '2026/27': { cls: 'now', width: 3, dots: true },
+    '2025/26': { cls: 'title', width: 2 },
+    '2024/25': { cls: 'old', width: 2 }
+  };
+  var cssVar = function (n) { return getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim(); };
+
+  // ---------- PWA Setup ----------
+  if ('serviceWorker' in navigator) {
+    try {
+      var swCode = "self.addEventListener('fetch', function(e) { e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); })); });";
+      var swBlob = new Blob([swCode], { type: 'text/javascript' });
+      var swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(function(){});
+    } catch(err) {}
+  }
+
+  // Dynamic Web Manifest with official Arsenal logo link
+  try {
+    var manifest = {
+      name: "Arsenal Points Race",
+      short_name: "ArsenalPts",
+      start_url: window.location.href,
+      display: "standalone",
+      background_color: "#0D121C",
+      theme_color: "#DB0007",
+      icons: [
+        { src: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", sizes: "512x512", type: "image/svg+xml" }
+      ]
+    };
+    var mBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    var mLink = document.createElement('link');
+    mLink.rel = 'manifest';
+    mLink.href = URL.createObjectURL(mBlob);
+    document.head.appendChild(mLink);
+  } catch(e) {}
+
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    var banner = document.getElementById('pwa-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+  var installBtn = document.getElementById('pwa-install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+          deferredPrompt = null;
+          var banner = document.getElementById('pwa-banner');
+          if (banner) banner.style.display = 'none';
+        });
+      } else {
+        alert('To install, tap the Share button in Safari and select "Add to Home Screen", or tap the browser menu in Chrome and select "Install app".');
+      }
+    });
+  }
+
+  // ---------- storage ----------
+  var memory = null, storageOk = true;
+  function loadEntries() {
+    try { var t = window.localStorage.getItem(KEY); return t ? JSON.parse(t) : {}; }
+    catch (e) { storageOk = false; return memory || {}; }
+  }
+  function saveEntries(obj) {
+    try { window.localStorage.setItem(KEY, JSON.stringify(obj)); return true; }
+    catch (e) { storageOk = false; memory = obj; return false; }
+  }
+  var entries = loadEntries();
+
+  function currentGames() {
+    var s = DATA.seasons.filter(function (x) { return x.season === CUR; })[0];
+    return s.games.map(function (g) {
+      var k = String(g.g);
+      var r = Object.prototype.hasOwnProperty.call(entries, k) ? entries[k] : g.r;
+      return { g: g.g, date: g.date, opp: g.opp, v: g.v, r: r || '' };
+    });
+  }
+  function seasonsNow() {
+    return DATA.seasons.map(function (s) {
+      var games = s.season === CUR ? currentGames() : s.games.slice();
+      var tot = 0;
+      games = games.map(function (g) {
+        var played = PTS.hasOwnProperty(g.r);
+        if (played) tot += PTS[g.r];
+        return { g: g.g, date: g.date, opp: g.opp, v: g.v, r: played ? g.r : '', cum: played ? tot : null };
+      });
+      return { season: s.season, games: games };
+    });
+  }
+  var venue = function (v) { return v === 'H' ? 'home' : 'away'; };
+  var signed = function (n) { return n > 0 ? '+' + n : n < 0 ? '\u2212' + Math.abs(n) : '\u00b10'; };
+  var el = function (id) { return document.getElementById(id); };
+  var NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) if (attrs[k] != null) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+
+  // ---------- render ----------
+  var picked = null, S = [];
+  function render() {
+    S = seasonsNow();
+    var cur = S.filter(function (s) { return s.season === CUR; })[0];
+    var played = cur.games.filter(function (g) { return g.cum != null; });
+    var n = played.length;
+    var p = n ? played[n - 1].cum : 0;
+    var at = function (season, game) {
+      var s = S.filter(function (x) { return x.season === season; })[0];
+      var g = s.games.filter(function (x) { return x.g === game; })[0];
+      return g && g.cum != null ? g.cum : 0;
+    };
+    var p26 = at('2025/26', n), p25 = at('2024/25', n);
+    var cnt = function (r) { return played.filter(function (g) { return g.r === r; }).length; };
+
+    // headline sentence
+    var lede = el('lede'); lede.textContent = '';
+    var add = function (txt, cls, bold) {
+      var node = bold ? document.createElement('b') : document.createTextNode(txt);
+      if (bold) { node.textContent = txt; if (cls) node.className = cls; }
+      lede.appendChild(node);
+    };
+    if (n === 0) {
+      add('No 2026/27 results yet. Enter the first one below.');
+    } else {
+      add('After '); add(String(n), null, true); add(n === 1 ? ' game Arsenal have ' : ' games Arsenal have ');
+      add(String(p), null, true); add(' points: ');
+      add(signed(p - p26), p - p26 > 0 ? 'up' : p - p26 < 0 ? 'down' : '', true); add(' on the 2025/26 champions and ');
+      add(signed(p - p25), p - p25 > 0 ? 'up' : p - p25 < 0 ? 'down' : '', true); add(' on 2024/25 at the same stage.');
+    }
+
+    // stats
+    el('s-pts').textContent = p; el('s-pts-s').textContent = 'after ' + n + (n === 1 ? ' game' : ' games');
+    [['s-d26', p - p26, p26, at('2025/26', 38)], ['s-d25', p - p25, p25, at('2024/25', 38)]].forEach(function (a) {
+      var v = el(a[0]); v.textContent = signed(a[1]); v.className = 'v' + (a[1] > 0 ? ' up' : a[1] < 0 ? ' down' : '');
+      el(a[0] + '-s').textContent = 'had ' + a[2] + ' pts then, finished on ' + a[3];
+    });
+    el('s-rec').textContent = cnt('W') + '-' + cnt('D') + '-' + cnt('L');
+
+    renderSelect(cur);
+    renderChart();
+    renderStrip();
+  }
+
+  function renderSelect(cur) {
+    var next = cur.games.filter(function (g) { return !g.r; })[0];
+    var want = picked != null ? picked : (next ? next.g : 38);
+    
+    [el('game'), el('mobile-game')].forEach(function(sel) {
+      if (!sel) return;
+      sel.textContent = '';
+      cur.games.forEach(function (g) {
+        var o = document.createElement('option');
+        o.value = String(g.g);
+        o.textContent = 'Game ' + g.g + ': ' + g.opp + ' (' + g.v + ') \u2013 ' + (g.r || 'to play');
+        sel.appendChild(o);
+      });
+      sel.value = String(want);
+    });
+  }
+
+  function renderChart() {
+    var box = el('chart');
+    box.textContent = '';
+    var W = Math.max(300, box.clientWidth);
+    var narrow = W < 560;
+    var H = Math.round(narrow ? Math.max(280, W * 0.9) : Math.max(260, Math.min(430, W * 0.5)));
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Cumulative points by game, three seasons' }, box);
+    var measure = function (txt, size, weight) {
+      var t = svgEl('text', { 'font-size': size || 12, 'font-weight': weight || 400 }, svg); t.textContent = txt;
+      var w = t.getComputedTextLength(); svg.removeChild(t); return w;
+    };
+    var maxCum = 0;
+    S.forEach(function (s) { s.games.forEach(function (g) { if (g.cum != null && g.cum > maxCum) maxCum = g.cum; }); });
+    var yMax = Math.max(30, Math.ceil(maxCum / 10) * 10);
+    var stepY = yMax > 60 ? 20 : 10;
+    var ends = S.map(function (s) {
+      var last = s.games.filter(function (g) { return g.cum != null; }).pop();
+      return last ? { s: s, last: last, label: narrow ? String(last.cum) : s.season + ': ' + last.cum } : null;
+    }).filter(Boolean);
+    var mL = measure(String(yMax)) + 12;
+    var mR = Math.max.apply(null, ends.map(function (e) { return measure(e.label, 12, 700); }).concat([20])) + 14;
+    var m = { t: 12, r: mR, b: 28, l: mL };
+    var x = function (g) { return m.l + (g - 1) * (W - m.l - m.r) / 37; };
+    var y = function (v) { return H - m.b - v * (H - m.t - m.b) / yMax; };
+    var sp = (W - m.l - m.r) / 37;
+
+    for (var v = 0; v <= yMax; v += stepY) {
+      svgEl('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: cssVar('grid'), 'stroke-width': 1 }, svg);
+      var tl = svgEl('text', { x: m.l - 8, y: y(v), dy: '0.32em', 'text-anchor': 'end', 'font-size': 12, fill: cssVar('muted') }, svg);
+      tl.textContent = v;
+    }
+    svgEl('line', { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, stroke: cssVar('line') }, svg);
+    var step = sp >= 22 ? 1 : sp >= 11 ? 2 : 5;
+    for (var g = 1; g <= 38; g++) {
+      var keep = g === 1 || g === 38 || (g % step === 0 && (38 - g) * sp > 26 && (g - 1) * sp > 26);
+      if (!keep) continue;
+      var tx = svgEl('text', { x: x(g), y: H - m.b + 17, 'text-anchor': 'middle', 'font-size': 12, fill: cssVar('muted') }, svg);
+      tx.textContent = g;
+    }
+
+    var order = ['2024/25', '2025/26', '2026/27'];
+    order.forEach(function (name) {
+      var s = S.filter(function (z) { return z.season === name; })[0]; if (!s) return;
+      var st = STYLE[name], col = cssVar(st.cls), d = '', pen = false;
+      s.games.forEach(function (gm) {
+        if (gm.cum == null) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + x(gm.g).toFixed(1) + ',' + y(gm.cum).toFixed(1); pen = true;
+      });
+      if (d) svgEl('path', { d: d, fill: 'none', stroke: col, 'stroke-width': st.width, 'stroke-linecap': 'round',
+        'stroke-linejoin': 'round' }, svg);
+      if (st.dots) s.games.forEach(function (gm) {
+        if (gm.cum != null) svgEl('circle', { cx: x(gm.g), cy: y(gm.cum), r: 3.2, fill: col }, svg);
+      });
+    });
+
+    var labs = ends.map(function (e) { return { e: e, lx: x(e.last.g) + 8, ly: y(e.last.cum) }; })
+      .sort(function (a, b) { return a.ly - b.ly; });
+    for (var i = 1; i < labs.length; i++) {
+      if (Math.abs(labs[i].lx - labs[i - 1].lx) < 70 && labs[i].ly - labs[i - 1].ly < 15) labs[i].ly = labs[i - 1].ly + 15;
+    }
+    labs.forEach(function (l) {
+      var t = svgEl('text', { x: l.lx, y: l.ly, dy: '0.32em', 'font-size': 12, 'font-weight': 700,
+        fill: cssVar(STYLE[l.e.s.season].cls), stroke: cssVar('panel'), 'stroke-width': 4, 'paint-order': 'stroke' }, svg);
+      t.textContent = l.e.label;
+    });
+
+    // hover / tap
+    var rule = svgEl('line', { y1: m.t, y2: H - m.b, stroke: cssVar('muted'), 'stroke-dasharray': '2 3', visibility: 'hidden' }, svg);
+    var hov = svgEl('g', {}, svg);
+    var tip = document.createElement('div'); tip.className = 'tip'; box.appendChild(tip);
+    var hit = svgEl('rect', { x: m.l - sp / 2, y: m.t, width: W - m.l - m.r + sp, height: H - m.t - m.b, fill: 'transparent' }, svg);
+    
+    function show(ev) {
+      var r = svg.getBoundingClientRect();
+      var sx = (ev.clientX - r.left) * (W / r.width);
+      var game = Math.max(1, Math.min(38, Math.round((sx - m.l) / sp + 1)));
+      rule.setAttribute('x1', x(game)); rule.setAttribute('x2', x(game)); rule.setAttribute('visibility', 'visible');
+      hov.textContent = ''; tip.textContent = '';
+      
+      var head = document.createElement('div'); head.className = 'head'; head.textContent = 'Fixture ' + game + ' of 38'; tip.appendChild(head);
+      
+      order.slice().reverse().forEach(function (name) {
+        var s = S.filter(function (z) { return z.season === name; })[0];
+        var gm = s.games.filter(function (q) { return q.g === game; })[0];
+        var col = cssVar(STYLE[name].cls);
+        if (gm && gm.cum != null) svgEl('circle', { cx: x(game), cy: y(gm.cum), r: 4.5, fill: col, stroke: cssVar('panel'), 'stroke-width': 2 }, hov);
+        
+        var row = document.createElement('div'); row.className = 'tip-row';
+        var top = document.createElement('div'); top.className = 'tip-top';
+        var left = document.createElement('span'); left.className = 'tip-left';
+        var sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = col;
+        var nm = document.createElement('span'); nm.textContent = name;
+        left.appendChild(sw); left.appendChild(nm);
+        
+        var val = document.createElement('span');
+        val.textContent = gm && gm.cum != null ? gm.cum + ' pts' : 'to play';
+        top.appendChild(left); top.appendChild(val);
+        row.appendChild(top);
+        
+        if (gm) {
+          var sub = document.createElement('div'); sub.className = 'tip-sub';
+          sub.textContent = (gm.r ? gm.r + ' vs ' : 'vs ') + gm.opp + ' (' + venue(gm.v) + ')';
+          row.appendChild(sub);
+        }
+        tip.appendChild(row);
+      });
+      tip.style.display = 'block';
+      var px = x(game) * (r.width / W), bw = box.clientWidth, tw = tip.offsetWidth;
+      var leftPos = px + 14; if (leftPos + tw > bw) leftPos = px - tw - 14; if (leftPos < 0) leftPos = Math.max(0, (bw - tw) / 2);
+      tip.style.left = leftPos + 'px';
+    }
+    function hide() { rule.setAttribute('visibility', 'hidden'); hov.textContent = ''; tip.style.display = 'none'; }
+    hit.addEventListener('pointermove', show);
+    hit.addEventListener('pointerdown', show);
+    hit.addEventListener('pointerleave', hide);
+  }
+
+  function renderStrip() {
+    var strip = el('strip'); strip.textContent = '';
+    var tip = document.createElement('div'); tip.className = 'tip';
+    var cols = (strip.clientWidth - 60) / 38 < 11 ? 19 : 38;
+    strip.style.gridTemplateColumns = 'auto repeat(' + cols + ', minmax(0, 1fr))';
+    var size = (strip.clientWidth - 60) / cols;
+    ['2026/27', '2025/26', '2024/25'].forEach(function (name) {
+      var s = S.filter(function (z) { return z.season === name; })[0];
+      var lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = name; strip.appendChild(lab);
+      s.games.forEach(function (gm, idx) {
+        if (idx > 0 && idx % cols === 0) { var pad = document.createElement('div'); pad.className = 'lab'; strip.appendChild(pad); }
+        var b = document.createElement('div');
+        b.className = 'box ' + (gm.r || 'none');
+        if (size >= 15 && gm.r) b.textContent = gm.r;
+        b.setAttribute('aria-label', name + ' game ' + gm.g + ': ' + (gm.r || 'to play') + ' vs ' + gm.opp);
+        var enter = function () {
+          b.classList.add('hot');
+          tip.innerHTML = '<div class="head">' + name + ', game ' + gm.g + '</div>' +
+            '<div class="tip-sub" style="margin-left:0">' + (gm.r ? gm.r + ' vs ' : 'vs ') + gm.opp + ' (' + venue(gm.v) + '), ' + (gm.cum != null ? gm.cum + ' pts' : 'to play') + '</div>';
+          tip.style.display = 'block';
+          var eb = strip.getBoundingClientRect(), bb = b.getBoundingClientRect();
+          var left = Math.max(0, Math.min(bb.left - eb.left + bb.width / 2 - tip.offsetWidth / 2, strip.clientWidth - tip.offsetWidth));
+          var top = bb.top - eb.top - tip.offsetHeight - 6; if (top < 0) top = bb.bottom - eb.top + 6;
+          tip.style.left = left + 'px'; tip.style.top = top + 'px';
+        };
+        b.addEventListener('pointerenter', enter);
+        b.addEventListener('pointerdown', enter);
+        b.addEventListener('pointerleave', function () { b.classList.remove('hot'); tip.style.display = 'none'; });
+        strip.appendChild(b);
+      });
+    });
+    strip.appendChild(tip);
+  }
+
+  // ---------- actions ----------
+  var msgTimer = null;
+  function say(text, cls) {
+    var m = el('msg'); m.textContent = text; m.className = 'msg' + (cls ? ' ' + cls : '');
+    clearTimeout(msgTimer); if (cls === 'ok') msgTimer = setTimeout(function () { m.textContent = ''; m.className = 'msg'; }, 5000);
+  }
+
+  function handleResultInput(gameNum, res) {
+    var base = DATA.seasons.filter(function (x) { return x.season === CUR; })[0].games.filter(function (g) { return g.g === gameNum; })[0];
+    if ((base.r || '') === res) delete entries[String(gameNum)]; else entries[String(gameNum)] = res;
+    var kept = saveEntries(entries);
+    picked = null;
+    render();
+    var label = res === 'W' ? 'win' : res === 'D' ? 'draw' : res === 'L' ? 'loss' : '';
+    if (!kept) say('Updated locally.', 'bad');
+    else say(res ? 'Saved: game ' + gameNum + ' ' + base.opp + ' as ' + label + '.' : 'Cleared result for game ' + gameNum + '.', 'ok');
+  }
+
+  el('game').addEventListener('change', function () {
+    picked = Number(this.value);
+    var mob = el('mobile-game'); if (mob) mob.value = this.value;
+  });
+  el('mobile-game').addEventListener('change', function () {
+    picked = Number(this.value);
+    var dt = el('game'); if (dt) dt.value = this.value;
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-res]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var game = Number(el('game').value); if (!game) return;
+      handleResultInput(game, btn.getAttribute('data-res'));
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-mres]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var game = Number(el('mobile-game').value); if (!game) return;
+      handleResultInput(game, btn.getAttribute('data-mres'));
+    });
+  });
+
+  el('reset').addEventListener('click', function () {
+    if (!Object.keys(entries).length) { say('No custom entries to undo.'); return; }
+    if (!window.confirm('Reset all entered results back to original data?')) return;
+    entries = {}; try { window.localStorage.removeItem(KEY); } catch (e) { memory = {}; }
+    picked = null; render(); say('Reset successful.', 'ok');
+  });
+
+  el('dl').addEventListener('click', function () {
+    var out = JSON.parse(JSON.stringify(DATA));
+    var cur = out.seasons.filter(function (x) { return x.season === CUR; })[0];
+    cur.games.forEach(function (g) { var k = String(g.g); if (Object.prototype.hasOwnProperty.call(entries, k)) g.r = entries[k]; });
+    out.stamp = new Date().toISOString().slice(0, 19);
+    var json = JSON.stringify(out).replace(/</g, '\\u003c');
+    var html = PRISTINE.replace(/(<script type="application\/json" id="ars-data">)[\s\S]*?(<\/script>)/, function (_, a, b) { return a + json + b; });
+    var blob = new Blob([html], { type: 'text/html' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'arsenal-points-race.html';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    say('Downloaded updated HTML file.', 'ok');
+  });
+
+  var lastW = 0;
+  var ro = window.ResizeObserver ? new ResizeObserver(function () {
+    var w = el('chart').clientWidth; if (Math.abs(w - lastW) > 2) { lastW = w; renderChart(); renderStrip(); }
+  }) : null;
+  render();
+  lastW = el('chart').clientWidth;
+  if (ro) ro.observe(el('chart')); else window.addEventListener('resize', function () { renderChart(); renderStrip(); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var re = function () { renderChart(); };
+    if (mq.addEventListener) mq.addEventListener('change', re); else if (mq.addListener) mq.addListener(re);
+  }
+})();
+</script></body></html>
