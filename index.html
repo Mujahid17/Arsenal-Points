@@ -9,9 +9,10 @@
 <meta name="theme-color" content="#DB0007">
 <title>Arsenal points race: 2026/27 vs the last two seasons</title>
 
-<!-- Replace your current icon links in the <head> section with this: -->
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-  
+<!-- Exact minimalist crest icon for Web & PWA / iOS home screen -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23EF4444' d='M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z'/%3E%3Cpath fill='%23FFF' d='M256 36c-84 0-142 88-142 204 0 120 142 216 142 216s142-96 142-216C398 124 340 36 256 36z'/%3E%3Cpath fill='%23EF4444' d='M130 190h252v52H130z'/%3E%3Cpath fill='%23FFF' d='M160 198h192v36H160z'/%3E%3Cpath fill='%23EF4444' d='M200 180c10-35 25-60 56-65 31 5 46 30 56 65H200z'/%3E%3Ccircle cx='256' cy='280' r='55' fill='%23EF4444'/%3E%3Ccircle cx='256' cy='280' r='38' fill='%23FFF'/%3E%3Ccircle cx='256' cy='280' r='20' fill='%23EF4444'/%3E%3Cpath fill='%23EF4444' d='M210 270h92v20h-92z'/%3E%3Cpath fill='%23EF4444' d='M246 230h20v100h-20z'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230D121C'/%3E%3Cpath fill='%23EF4444' d='M256 46C160 46 96 132 96 250c0 134 160 226 160 226s160-92 160-226C416 132 352 46 256 46z'/%3E%3Cpath fill='%23FFF' d='M256 66c-84 0-142 82-142 190 0 112 142 200 142 200s142-88 142-200C398 148 340 66 256 66z'/%3E%3Cpath fill='%23EF4444' d='M130 210h252v48H130z'/%3E%3Cpath fill='%23FFF' d='M160 218h192v32H160z'/%3E%3Ccircle cx='256' cy='290' r='50' fill='%23EF4444'/%3E%3Ccircle cx='256' cy='290' r='34' fill='%23FFF'/%3E%3Ccircle cx='256' cy='290' r='18' fill='%23EF4444'/%3E%3Cpath fill='%23EF4444' d='M216 280h80v20h-80z'/%3E%3Cpath fill='%23EF4444' d='M246 245h20v90h-20z'/%3E%3C/svg%3E">
+
 <style>
   :root {
     color-scheme: light;
@@ -35,12 +36,9 @@
          padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
          min-height: 100%; user-select: none; }
   .wrap { max-width: 980px; margin: 0 auto; padding: 16px 16px 90px; display: flex; flex-direction: column; gap: 16px; }
-  
-  /* Header layout with inline custom crest logo */
   .app-header { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
-  .app-header svg { width: 40px; height: 40px; flex-shrink: 0; }
+  .app-header svg { width: 42px; height: 42px; flex-shrink: 0; }
   h1 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
-  
   .lede { margin: 0; color: var(--muted); font-size: 1.02rem; max-width: 62ch; }
   .lede b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .lede b.up, .stat .v.up { color: var(--up); }
@@ -131,15 +129,17 @@
 
   <header>
     <div class="app-header">
-      <!-- Your custom crest icon rendered right in the webpage header -->
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <path fill="#F5A623" d="M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z"/>
-        <path fill="#D0021B" d="M256 32c-80 0-136 84-136 208 0 128 136 224 136 224s136-96 136-224C392 116 336 32 256 32z"/>
-        <path fill="#005A9C" d="M156 80c-20 30-36 80-36 144 0 100 90 190 136 224V80H156z"/>
-        <path fill="#4A90E2" d="M168 90c-15 25-28 65-28 120 0 85 75 160 116 195V90H168z"/>
-        <path fill="#F5A623" d="M136 180h240v40H136z"/>
-        <circle cx="256" cy="280" r="50" fill="#F5A623"/>
-        <circle cx="256" cy="280" r="20" fill="#D0021B"/>
+        <path fill="#EF4444" d="M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z"/>
+        <path fill="#FFF" d="M256 36c-84 0-142 88-142 204 0 120 142 216 142 216s142-96 142-216C398 124 340 36 256 36z"/>
+        <path fill="#EF4444" d="M130 190h252v52H130z"/>
+        <path fill="#FFF" d="M160 198h192v36H160z"/>
+        <path fill="#EF4444" d="M200 180c10-35 25-60 56-65 31 5 46 30 56 65H200z"/>
+        <circle cx="256" cy="280" r="55" fill="#EF4444"/>
+        <circle cx="256" cy="280" r="38" fill="#FFF"/>
+        <circle cx="256" cy="280" r="20" fill="#EF4444"/>
+        <path fill="#EF4444" d="M210 270h92v20h-92z"/>
+        <path fill="#EF4444" d="M246 230h20v100h-20z"/>
       </svg>
       <h1>Arsenal points race</h1>
     </div>
@@ -227,7 +227,7 @@
   }
 
   try {
-    var iconSvg = "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23FFFFFF'/%3E%3Cpath fill='none' stroke='%23DB0007' stroke-width='24' d='M256 48C160 48 96 136 96 260c0 134 160 224 160 224s160-90 160-224C416 136 352 48 256 48z'/%3E%3Cpath fill='none' stroke='%23DB0007' stroke-width='16' d='M220 180h72v36h-72z'/></svg>";
+    var iconSvg = "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23EF4444' d='M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z'/%3E%3Cpath fill='%23FFF' d='M256 36c-84 0-142 88-142 204 0 120 142 216 142 216s142-96 142-216C398 124 340 36 256 36z'/%3E%3Cpath fill='%23EF4444' d='M130 190h252v52H130z'/%3E%3Cpath fill='%23FFF' d='M160 198h192v36H160z'/%3E%3Cpath fill='%23EF4444' d='M200 180c10-35 25-60 56-65 31 5 46 30 56 65H200z'/%3E%3Ccircle cx='256' cy='280' r='55' fill='%23EF4444'/%3E%3Ccircle cx='256' cy='280' r='38' fill='%23FFF'/%3E%3Ccircle cx='256' cy='280' r='20' fill='%23EF4444'/%3E%3Cpath fill='%23EF4444' d='M210 270h92v20h-92z'/%3E%3Cpath fill='%23EF4444' d='M246 230h20v100h-20z'/%3E%3C/svg%3E";
     var iconUrl = "data:image/svg+xml;charset=utf-8," + iconSvg;
     var manifest = {
       name: "Arsenal Points Race",
