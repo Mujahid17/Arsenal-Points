@@ -7,10 +7,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Arsenal Points">
 <meta name="theme-color" content="#DB0007">
-<!-- High-res Arsenal Crest Icon for iOS Home Screen -->
-<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg">
-<link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg">
 <title>Arsenal points race: 2026/27 vs the last two seasons</title>
+
+<!-- Embedded Custom Arsenal Crest Icon for Web & iOS Mobile -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23F5A623' d='M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z'/%3E%3Cpath fill='%23D0021B' d='M256 32c-80 0-136 84-136 208 0 128 136 224 136 224s136-96 136-224C392 116 336 32 256 32z'/%3E%3Cpath fill='%23005A9C' d='M156 80c-20 30-36 80-36 144 0 100 90 190 136 224V80H156z'/%3E%3Cpath fill='%234A90E2' d='M168 90c-15 25-28 65-28 120 0 85 75 160 116 195V90H168z'/%3E%3Cpath fill='%23F5A623' d='M136 180h240v40H136z'/%3E%3Ccircle cx='256' cy='280' r='50' fill='%23F5A623'/%3E%3Ccircle cx='256' cy='280' r='20' fill='%23D0021B'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23151C29'/%3E%3Cpath fill='%23F5A623' d='M256 46C160 46 96 132 96 250c0 134 160 226 160 226s160-92 160-226C416 132 352 46 256 46z'/%3E%3Cpath fill='%23D0021B' d='M256 62c-80 0-136 74-136 188 0 118 136 204 136 204s136-86 136-204C392 136 336 62 256 62z'/%3E%3Cpath fill='%23005A9C' d='M156 100c-20 28-36 72-36 134 0 92 90 172 136 204V100H156z'/%3E%3Cpath fill='%234A90E2' d='M168 110c-15 22-28 58-28 108 0 78 75 146 116 178V110H168z'/%3E%3Cpath fill='%23F5A623' d='M136 190h240v36H136z'/%3E%3Ccircle cx='256' cy='280' r='45' fill='%23F5A623'/%3E%3Ccircle cx='256' cy='280' r='18' fill='%23D0021B'/%3E%3C/svg%3E">
+
 <style>
   :root {
     color-scheme: light;
@@ -34,11 +36,9 @@
          padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
          min-height: 100%; user-select: none; }
   .wrap { max-width: 980px; margin: 0 auto; padding: 16px 16px 90px; display: flex; flex-direction: column; gap: 16px; }
-  
-  .header-brand { display: flex; align-items: center; gap: 12px; margin: 8px 0 4px; }
-  .header-brand img { width: 38px; height: 44px; object-fit: contain; }
+  .app-header { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .app-header svg { width: 42px; height: 42px; flex-shrink: 0; }
   h1 { font-size: clamp(1.5rem, 4.5vw, 2.3rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
-  
   .lede { margin: 0; color: var(--muted); font-size: 1.02rem; max-width: 62ch; }
   .lede b { color: var(--ink); font-variant-numeric: tabular-nums; }
   .lede b.up, .stat .v.up { color: var(--up); }
@@ -71,6 +71,7 @@
   .chart { position: relative; touch-action: pan-y; }
   .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
   
+  /* tooltip fix */
   .tip { position: absolute; top: 6px; pointer-events: none; background: var(--panel); border: 1px solid var(--line);
          border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); padding: 10px 12px; font-size: 0.8rem;
          width: 230px; display: none; z-index: 10; }
@@ -102,14 +103,12 @@
   .tools { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
   .tools button { flex: 1; }
 
-  /* mobile sticky action bar */
   .mobile-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--line); padding: 10px 16px env(safe-area-inset-bottom, 10px); z-index: 100; box-shadow: 0 -4px 16px rgba(0,0,0,.08); gap: 8px; align-items: center; }
   @media (max-width: 768px) {
     .mobile-bar { display: flex; }
     .wrap { padding-bottom: 110px; }
   }
 
-  /* PWA install banner */
   #pwa-banner { display: none; background: linear-gradient(135deg, var(--title), var(--now)); color: #fff; padding: 12px 16px; border-radius: var(--radius); align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   #pwa-banner button { background: #fff; color: var(--ink); border: none; padding: 6px 12px; font-weight: 700; border-radius: 6px; min-height: auto; cursor: pointer; }
 
@@ -129,11 +128,19 @@
   </div>
 
   <header>
-    <div class="header-brand">
-      <img src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" alt="Arsenal Crest" />
+    <div class="app-header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <path fill="#F5A623" d="M256 16C160 16 96 112 96 240c0 144 160 256 160 256s160-112 160-256C416 112 352 16 256 16z"/>
+        <path fill="#D0021B" d="M256 32c-80 0-136 84-136 208 0 128 136 224 136 224s136-96 136-224C392 116 336 32 256 32z"/>
+        <path fill="#005A9C" d="M156 80c-20 30-36 80-36 144 0 100 90 190 136 224V80H156z"/>
+        <path fill="#4A90E2" d="M168 90c-15 25-28 65-28 120 0 85 75 160 116 195V90H168z"/>
+        <path fill="#F5A623" d="M136 180h240v40H136z"/>
+        <circle cx="256" cy="280" r="50" fill="#F5A623"/>
+        <circle cx="256" cy="280" r="20" fill="#D0021B"/>
+      </svg>
       <h1>Arsenal points race</h1>
     </div>
-    <p class="lede" id="lede">Loading…</p>
+    <p class="lede" id="lede" style="margin-top: 6px;">Loading…</p>
   </header>
 
   <section class="panel entry" aria-labelledby="entry-h">
@@ -184,7 +191,6 @@
   </footer>
 </div>
 
-<!-- Mobile Sticky Action Bar -->
 <div class="mobile-bar">
   <select id="mobile-game" aria-label="Game Select" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit; min-height:44px;"></select>
   <button type="button" class="res W" data-mres="W" style="min-width:44px;">W</button>
@@ -208,7 +214,7 @@
   };
   var cssVar = function (n) { return getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim(); };
 
-  // ---------- PWA Setup ----------
+  // ---------- PWA & Embedded Manifest Setup ----------
   if ('serviceWorker' in navigator) {
     try {
       var swCode = "self.addEventListener('fetch', function(e) { e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); })); });";
@@ -218,8 +224,9 @@
     } catch(err) {}
   }
 
-  // Dynamic Web Manifest with official Arsenal logo link
   try {
+    var iconSvg = "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23151C29'/%3E%3Cpath fill='%23F5A623' d='M256 46C160 46 96 132 96 250c0 134 160 226 160 226s160-92 160-226C416 132 352 46 256 46z'/%3E%3Cpath fill='%23D0021B' d='M256 62c-80 0-136 74-136 188 0 118 136 204 136 204s136-86 136-204C392 136 336 62 256 62z'/%3E%3Cpath fill='%23005A9C' d='M156 100c-20 28-36 72-36 134 0 92 90 172 136 204V100H156z'/%3E%3Cpath fill='%234A90E2' d='M168 110c-15 22-28 58-28 108 0 78 75 146 116 178V110H168z'/%3E%3Cpath fill='%23F5A623' d='M136 190h240v36H136z'/%3E%3Ccircle cx='256' cy='280' r='45' fill='%23F5A623'/%3E%3Ccircle cx='256' cy='280' r='18' fill='%23D0021B'/%3E%3C/svg%3E";
+    var iconUrl = "data:image/svg+xml;charset=utf-8," + iconSvg;
     var manifest = {
       name: "Arsenal Points Race",
       short_name: "ArsenalPts",
@@ -227,9 +234,7 @@
       display: "standalone",
       background_color: "#0D121C",
       theme_color: "#DB0007",
-      icons: [
-        { src: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", sizes: "512x512", type: "image/svg+xml" }
-      ]
+      icons: [{ src: iconUrl, sizes: "512x512", type: "image/svg+xml" }]
     };
     var mBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
     var mLink = document.createElement('link');
@@ -320,7 +325,6 @@
     var p26 = at('2025/26', n), p25 = at('2024/25', n);
     var cnt = function (r) { return played.filter(function (g) { return g.r === r; }).length; };
 
-    // headline sentence
     var lede = el('lede'); lede.textContent = '';
     var add = function (txt, cls, bold) {
       var node = bold ? document.createElement('b') : document.createTextNode(txt);
@@ -336,7 +340,6 @@
       add(signed(p - p25), p - p25 > 0 ? 'up' : p - p25 < 0 ? 'down' : '', true); add(' on 2024/25 at the same stage.');
     }
 
-    // stats
     el('s-pts').textContent = p; el('s-pts-s').textContent = 'after ' + n + (n === 1 ? ' game' : ' games');
     [['s-d26', p - p26, p26, at('2025/26', 38)], ['s-d25', p - p25, p25, at('2024/25', 38)]].forEach(function (a) {
       var v = el(a[0]); v.textContent = signed(a[1]); v.className = 'v' + (a[1] > 0 ? ' up' : a[1] < 0 ? ' down' : '');
@@ -432,7 +435,6 @@
       t.textContent = l.e.label;
     });
 
-    // hover / tap
     var rule = svgEl('line', { y1: m.t, y2: H - m.b, stroke: cssVar('muted'), 'stroke-dasharray': '2 3', visibility: 'hidden' }, svg);
     var hov = svgEl('g', {}, svg);
     var tip = document.createElement('div'); tip.className = 'tip'; box.appendChild(tip);
